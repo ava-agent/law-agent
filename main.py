@@ -15,6 +15,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 os.makedirs(settings.GENERATED_DOCS_DIR, exist_ok=True)
 
 app = FastAPI(title="法律维权助手", version="1.0.0")
@@ -27,8 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
 
 app.include_router(chat.router, prefix="/api/chat", tags=["consultation"])
 app.include_router(document.router, prefix="/api/document", tags=["document"])

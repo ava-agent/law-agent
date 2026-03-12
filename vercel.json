@@ -3,26 +3,22 @@
     "builds": [
         {
             "src": "api/index.py",
-            "use": "@vercel/python"
-        },
-        {
-            "src": "static/**",
-            "use": "@vercel/static"
-        },
-        {
-            "src": "templates/**",
-            "use": "@vercel/static"
-        },
-        {
-            "src": "knowledge/**",
-            "use": "@vercel/static"
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "50mb",
+                "includeFiles": [
+                    "main.py",
+                    "config.py",
+                    "app/**/*.py",
+                    "app/**/__init__.py",
+                    "knowledge/**/*.json",
+                    "templates/**/*.html",
+                    "static/**/*"
+                ]
+            }
         }
     ],
     "routes": [
-        {
-            "src": "/static/(.*)",
-            "dest": "/static/$1"
-        },
         {
             "src": "/(.*)",
             "dest": "/api/index.py"

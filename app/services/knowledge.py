@@ -4,7 +4,9 @@ from typing import Dict, List, Optional
 
 
 class KnowledgeBase:
-    def __init__(self, knowledge_dir: str = "knowledge"):
+    def __init__(self, knowledge_dir: str = None):
+        if knowledge_dir is None:
+            knowledge_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "knowledge")
         self.laws: Dict[str, Dict] = {}
         self.processes: Dict[str, Dict] = {}
         self.platforms: List[Dict] = []
