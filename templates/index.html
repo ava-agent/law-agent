@@ -25,8 +25,8 @@
         </header>
 
         <div class="main-content">
-            <!-- Chat Area -->
-            <div class="chat-container">
+            <!-- Chat Area (toggled with doc-form-container) -->
+            <div class="chat-container" id="chat-container">
                 <!-- Quick Actions -->
                 <div class="quick-actions" id="quick-actions">
                     <p class="quick-label">选择纠纷类型</p>
@@ -62,18 +62,50 @@
                 </div>
             </div>
 
+            <!-- Document Form View (hidden by default) -->
+            <div class="doc-form-container" id="doc-form-container" style="display:none;">
+                <div class="doc-form-inner">
+                    <div class="doc-form-header">
+                        <h2 id="doc-form-title"></h2>
+                        <p id="doc-form-desc" class="doc-form-description"></p>
+                    </div>
+                    <form id="doc-form" class="doc-form">
+                        <div id="doc-form-fields" class="doc-form-fields"></div>
+                        <div class="doc-form-group">
+                            <label for="doc-form-description">情况描述</label>
+                            <textarea id="doc-form-description" rows="5" placeholder="请详细描述您遇到的问题、经过和诉求..."></textarea>
+                        </div>
+                        <div class="doc-form-actions">
+                            <button type="submit" class="doc-form-submit" id="doc-form-submit">生成文书</button>
+                        </div>
+                    </form>
+                    <div id="doc-form-result" class="doc-form-result" style="display:none;"></div>
+                </div>
+            </div>
+
             <!-- Sidebar Overlay (mobile) -->
             <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
             <!-- Sidebar -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-section">
+                    <h3>功能导航</h3>
+                    <div class="sidebar-nav">
+                        <button class="sidebar-nav-btn active" id="nav-chat">智能咨询</button>
+                        <button class="sidebar-nav-btn" id="nav-docs">文书工具</button>
+                    </div>
+                </div>
+                <div class="sidebar-section" id="doc-tool-section" style="display:none;">
+                    <h3>选择文书类型</h3>
+                    <div id="doc-tool-buttons" class="doc-tool-buttons"></div>
+                </div>
+                <div class="sidebar-section" id="sidebar-case-info">
                     <h3>案件信息</h3>
                     <div id="case-info-panel" class="case-info-panel">
                         <p class="placeholder-text">暂无信息，请先描述您的问题</p>
                     </div>
                 </div>
-                <div class="sidebar-section">
+                <div class="sidebar-section" id="sidebar-docs">
                     <h3>已生成文书</h3>
                     <div id="docs-panel" class="docs-panel">
                         <p class="placeholder-text">暂未生成文书</p>
