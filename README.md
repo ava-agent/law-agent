@@ -12,20 +12,46 @@
 - **平台推荐**：智能推荐最适合的投诉平台（12315、12345、黑猫投诉、法院等）
 - **流程指导**：详细的投诉流程步骤说明
 
-## 系统架构
+## 技术栈架构
 
-![系统架构图](docs/images/architecture.png)
+![技术栈架构图](docs/images/tech-stack-architecture.png)
 
-| 组件 | 技术 |
-|------|------|
-| 后端框架 | Python 3.9+ / FastAPI |
-| AI 模型 | 智谱 GLM-4-Plus (zhipuai SDK) |
-| 文书生成 | python-docx |
-| 前端 | Jinja2 + 原生 HTML/CSS/JS |
-| 知识库 | JSON 文件 |
-| 会话存储 | Supabase PostgreSQL |
-| 文档存储 | Supabase Storage |
-| 部署 | Vercel Serverless / Docker |
+| 组件 | 技术 | 说明 |
+|------|------|------|
+| 后端框架 | Python 3.9+ / FastAPI | 异步路由、SSE 流式响应 |
+| AI 模型 | 智谱 GLM-4-Plus (zhipuai SDK) | 流式生成、结构化信息提取 |
+| 文书生成 | python-docx | 模板化法律文书生成 |
+| 前端 | Jinja2 + 原生 HTML/CSS/JS | SSE EventSource、DOMParser 安全渲染 |
+| 知识库 | JSON 文件 (RAG) | 法律条文、投诉流程、平台规则 |
+| 会话存储 | Supabase PostgreSQL (JSONB) | 有状态对话持久化 |
+| 文档存储 | Supabase Storage | .docx 文件云存储 |
+| 部署 | Vercel Serverless / Docker | 无服务器 + 容器双模式 |
+
+## AI Agent 设计架构
+
+系统核心是一个基于 **有限状态机（FSM）** 的对话 Agent，通过 6 个对话阶段引导用户完成维权全流程：
+
+![AI Agent 设计架构图](docs/images/agent-design-architecture.png)
+
+### 核心设计要点
+
+- **FSM 状态管理**：6 个阶段（greeting → situation_analysis → case_summary → guidance → document_preparation → follow_up），通过字段收集阈值和关键词匹配触发状态转换
+- **Prompt Engineering**：每个阶段有独立的提示词模板，动态注入会话上下文（已收集信息、缺失字段、法律条文）
+- **结构化信息提取**：LLM 在自然语言回复中嵌入 `<!--EXTRACTED_JSON-->` 注释块，Agent 通过正则解析提取结构化数据，更新 `case_info`
+- **知识库注入（RAG）**：根据案件类型从 JSON 知识库中检索相关法律条文、投诉流程、平台信息，注入到 LLM 提示词中
+- **对话历史窗口**：仅保留最近 10 条消息作为上下文，平衡信息量与 token 消耗
+
+## Agent 逻辑执行流程
+
+每条用户消息的完整处理链路：
+
+![Agent 逻辑执行流程图](docs/images/agent-logic-execution.png)
+
+### 关键执行路径
+
+1. **信息收集阶段**：构建上下文 → LLM 流式生成 → 正则提取 JSON → 更新 case_info → 判断是否满足最小字段集 → 自动触发案件总结
+2. **案件总结阶段**：关键词检测用户意图（确认/修改/其他）→ 确认则注入法律知识生成维权指导，修改则回退到信息收集
+3. **文书生成阶段**：检查文书必需字段 → 缺失则 LLM 追问 → 齐全则触发 python-docx 模板生成 → 上传到 Supabase Storage
 
 ## 对话流程
 
