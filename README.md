@@ -2,6 +2,8 @@
 
 基于 AI 的消费者维权智能咨询系统，帮助普通消费者了解维权流程、生成法律文书、推荐投诉平台。
 
+> **在线体验**：[https://law-agent-eosin.vercel.app](https://law-agent-eosin.vercel.app)
+
 ## 功能特性
 
 - **智能对话咨询**：通过对话逐步收集案件信息，提供专业的法律建议
@@ -17,11 +19,13 @@
 | 组件 | 技术 |
 |------|------|
 | 后端框架 | Python 3.9+ / FastAPI |
-| AI 模型 | 智谱 GLM (zhipuai SDK) |
+| AI 模型 | 智谱 GLM-4-Plus (zhipuai SDK) |
 | 文书生成 | python-docx |
 | 前端 | Jinja2 + 原生 HTML/CSS/JS |
 | 知识库 | JSON 文件 |
-| 部署 | Docker / docker-compose |
+| 会话存储 | Supabase PostgreSQL |
+| 文档存储 | Supabase Storage |
+| 部署 | Vercel Serverless / Docker |
 
 ## 对话流程
 
@@ -33,6 +37,10 @@
 
 ![API接口与文书类型](docs/images/api-and-documents.png)
 
+## 部署架构
+
+![部署架构图](docs/images/deployment-architecture.png)
+
 ## 项目结构
 
 ```
@@ -40,6 +48,8 @@ law-agent/
 ├── main.py                      # FastAPI 入口
 ├── config.py                    # 配置管理
 ├── requirements.txt             # 依赖列表
+├── vercel.json                  # Vercel 部署配置
+├── api/index.py                 # Vercel Serverless 入口
 ├── Dockerfile                   # Docker 镜像配置
 ├── docker-compose.yml           # Docker Compose 编排
 ├── .env                         # 环境变量（API Key）
@@ -56,7 +66,9 @@ law-agent/
 │   │   ├── llm.py               # 智谱 GLM 封装
 │   │   ├── document_generator.py # 文书生成
 │   │   ├── platform_recommender.py # 平台推荐
-│   │   └── knowledge.py         # 知识库加载
+│   │   ├── knowledge.py         # 知识库加载
+│   │   ├── session_store.py     # Supabase 会话存储
+│   │   └── doc_storage.py       # Supabase 文档存储
 │   │
 │   ├── models/
 │   │   ├── schemas.py           # 数据模型
@@ -124,7 +136,46 @@ python main.py
 
 服务启动后访问 http://localhost:8000
 
-### 方式二：Docker 部署
+### 方式二：Vercel + Supabase 云部署
+
+#### 1. 创建 Supabase 项目
+
+前往 [supabase.com](https://supabase.com) 创建项目，然后执行以下 SQL 创建会话表：
+
+```sql
+CREATE TABLE sessions (
+    session_id TEXT PRIMARY KEY,
+    data JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+在 Supabase Storage 中创建名为 `documents` 的存储桶（设为公开）。
+
+#### 2. 部署到 Vercel
+
+```bash
+# 安装 Vercel CLI
+npm i -g vercel
+
+# 部署
+vercel --prod
+```
+
+#### 3. 配置环境变量
+
+```bash
+printf '%s' "your_zhipuai_api_key" | vercel env add ZHIPUAI_API_KEY production
+printf '%s' "glm-4-plus" | vercel env add GLM_MODEL production
+printf '%s' "https://xxx.supabase.co" | vercel env add SUPABASE_URL production
+printf '%s' "your_supabase_anon_key" | vercel env add SUPABASE_KEY production
+```
+
+> **注意**：使用 `printf '%s'` 而非 `echo` 避免尾部换行导致 API Key 无效。
+
+配置完成后重新部署：`vercel --prod`
+
+### 方式三：Docker 部署
 
 #### 1. 配置环境变量
 
