@@ -2,7 +2,7 @@
 
 基于 AI 的消费者维权智能咨询系统，帮助普通消费者了解维权流程、生成法律文书、推荐投诉平台。
 
-> **在线体验**：[https://law-agent-eosin.vercel.app](https://law-agent-eosin.vercel.app)
+> **在线体验**：[https://law.rxcloud.group](https://law.rxcloud.group)
 
 ## 功能特性
 
