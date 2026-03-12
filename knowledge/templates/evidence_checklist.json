@@ -1,0 +1,9 @@
+{
+  "doc_type": "evidence_checklist",
+  "display_name": "证据清单",
+  "description": "整理维权证据材料的清单",
+  "required_fields": [
+    "evidence_available",
+    "problem_description"
+  ]
+}

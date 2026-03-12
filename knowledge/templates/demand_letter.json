@@ -1,0 +1,13 @@
+{
+  "doc_type": "demand_letter",
+  "display_name": "协商函",
+  "description": "向商家发送的正式协商要求函",
+  "required_fields": [
+    "complainant_name",
+    "merchant_name",
+    "purchase_date",
+    "purchase_amount",
+    "problem_description",
+    "desired_outcome"
+  ]
+}

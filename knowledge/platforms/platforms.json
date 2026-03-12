@@ -1,0 +1,359 @@
+{
+  "version": "1.0",
+  "last_updated": "2026-02-26",
+  "description": "消费者维权平台信息汇总，用于智能推荐最适合消费者具体情况的维权渠道",
+  "platforms": [
+    {
+      "id": "12315",
+      "name": "12315平台",
+      "full_name": "全国12315消费者投诉举报平台",
+      "url": "https://www.12315.cn",
+      "type": "government",
+      "operator": "国家市场监督管理总局",
+      "scope": [
+        "product_quality",
+        "false_advertising",
+        "food_safety",
+        "service_quality",
+        "refund_dispute",
+        "price_fraud",
+        "counterfeit_goods",
+        "measurement_fraud",
+        "unfair_contract_terms",
+        "personal_information_protection"
+      ],
+      "strengths": [
+        "政府权威平台，公信力强",
+        "市场监管部门有行政执法权",
+        "可对违法商家进行行政处罚（罚款、吊销执照等）",
+        "覆盖全国，属地管辖明确",
+        "多渠道接入（网站、APP、小程序、电话）",
+        "处理结果有行政效力"
+      ],
+      "limitations": [
+        "处理周期较长（受理后最长90日）",
+        "调解不成时不能强制商家赔偿消费者",
+        "对跨地区投诉需转办至被投诉方所在地",
+        "高峰期（如315前后）投诉量大可能影响处理速度"
+      ],
+      "effectiveness": "high",
+      "processing_time": "7个工作日内受理，60-90日处理完毕",
+      "cost": "免费",
+      "priority_conditions": {
+        "always_recommend": true,
+        "boost_when": [
+          "涉及食品安全问题",
+          "涉及商品质量安全问题",
+          "涉及虚假宣传或广告欺诈",
+          "涉及价格欺诈",
+          "涉及假冒伪劣商品",
+          "涉及无照经营",
+          "需要行政部门介入调查"
+        ],
+        "reduce_when": [
+          "纯合同纠纷且无违法行为",
+          "争议金额极小且需快速解决",
+          "纠纷已超过市场监管部门管辖范围"
+        ]
+      },
+      "process_file": "processes/complaint_12315.json"
+    },
+    {
+      "id": "12345",
+      "name": "12345热线",
+      "full_name": "12345政务服务便民热线",
+      "url": "https://www.12345.gov.cn",
+      "type": "government",
+      "operator": "各级人民政府",
+      "scope": [
+        "product_quality",
+        "service_quality",
+        "refund_dispute",
+        "public_utility_service",
+        "property_management",
+        "transportation_service",
+        "education_training",
+        "medical_service",
+        "tourism_dispute",
+        "government_service_complaint"
+      ],
+      "strengths": [
+        "覆盖范围最广，几乎所有政务相关问题都可受理",
+        "一号受理、统一转办，消费者无需辨别具体部门",
+        "有满意度回访和政府考核机制",
+        "全天候服务（部分地区支持24小时）",
+        "操作门槛低，打电话即可投诉"
+      ],
+      "limitations": [
+        "12345本身不具有执法权，需转办至具体部门",
+        "转办过程增加处理时间",
+        "多部门交叉的问题可能出现推诿",
+        "各地服务质量和效率参差不齐",
+        "对商家的直接约束力弱于专业监管部门"
+      ],
+      "effectiveness": "medium",
+      "processing_time": "15-30个工作日",
+      "cost": "免费",
+      "priority_conditions": {
+        "always_recommend": false,
+        "boost_when": [
+          "不确定应该找哪个部门投诉",
+          "涉及公共服务（水电气暖、公共交通等）",
+          "涉及物业管理纠纷",
+          "涉及政府服务问题",
+          "其他专业平台投诉未获满意处理",
+          "涉及多个部门管辖的综合性问题"
+        ],
+        "reduce_when": [
+          "有明确对口的专业投诉平台",
+          "需要快速处理的紧急问题",
+          "纯粹的商业纠纷"
+        ]
+      },
+      "process_file": "processes/complaint_12345.json"
+    },
+    {
+      "id": "heimao",
+      "name": "黑猫投诉",
+      "full_name": "黑猫投诉平台",
+      "url": "https://tousu.sina.com.cn",
+      "type": "third_party",
+      "operator": "新浪集团",
+      "scope": [
+        "refund_dispute",
+        "service_quality",
+        "false_advertising",
+        "online_shopping_dispute",
+        "subscription_cancellation",
+        "account_issue",
+        "delivery_issue",
+        "after_sales_service",
+        "membership_dispute",
+        "app_deduction",
+        "virtual_goods_dispute"
+      ],
+      "strengths": [
+        "处理速度快，互联网企业响应积极",
+        "投诉内容公开透明，舆论监督压力大",
+        "操作简便，全流程线上化",
+        "平台影响力大，入驻企业众多（尤其互联网企业）",
+        "支持微博同步传播，增加曝光度",
+        "可参考其他消费者同类投诉的处理结果",
+        "企业响应率和满意度数据公开透明"
+      ],
+      "limitations": [
+        "非政府平台，不具有行政执法权和法律强制力",
+        "对未入驻平台的企业约束力有限",
+        "主要靠舆论压力，对小微企业或无品牌企业效果差",
+        "不适合处理复杂法律纠纷或大额赔偿案件",
+        "处理结果不具有法律效力"
+      ],
+      "effectiveness": "medium_high",
+      "processing_time": "企业24-72小时内响应，3-15个工作日处理",
+      "cost": "免费",
+      "priority_conditions": {
+        "always_recommend": false,
+        "boost_when": [
+          "涉及知名互联网企业或电商平台",
+          "涉及APP扣费、自动续费问题",
+          "涉及在线服务（视频会员、音乐会员等）纠纷",
+          "涉及快递物流问题",
+          "希望快速得到企业回应",
+          "涉及的企业已入驻黑猫平台",
+          "希望通过舆论引起企业重视"
+        ],
+        "reduce_when": [
+          "涉及线下小商户或个体经营者",
+          "需要行政执法介入",
+          "涉及人身安全或食品安全",
+          "争议金额较大需要法律途径解决",
+          "商家为未入驻的小微企业"
+        ]
+      },
+      "process_file": "processes/complaint_heimao.json"
+    },
+    {
+      "id": "consumer_association",
+      "name": "消费者协会",
+      "full_name": "中国消费者协会（各级消协组织）",
+      "url": "https://www.cca.org.cn",
+      "type": "social_organization",
+      "operator": "各级消费者协会/消费者委员会",
+      "scope": [
+        "product_quality",
+        "service_quality",
+        "false_advertising",
+        "refund_dispute",
+        "price_dispute",
+        "measurement_issue",
+        "after_sales_service",
+        "contract_dispute",
+        "personal_information_protection",
+        "prepaid_card_dispute"
+      ],
+      "strengths": [
+        "公益性组织，完全免费服务",
+        "具有较高社会公信力",
+        "拥有专业的消费维权知识和丰富经验",
+        "可以进行比较试验和调查评议",
+        "可以支持消费者提起诉讼",
+        "可以提起消费公益诉讼",
+        "调解方式灵活",
+        "可以向行政部门反映问题、提出建议"
+      ],
+      "limitations": [
+        "调解不具有法律强制力",
+        "商家可以拒绝参加调解或不履行调解协议",
+        "部分地方消协人手不足，处理效率有限",
+        "对恶意商家的直接惩戒能力有限"
+      ],
+      "effectiveness": "medium",
+      "processing_time": "受理后30个工作日内完成调解",
+      "cost": "免费",
+      "priority_conditions": {
+        "always_recommend": false,
+        "boost_when": [
+          "消费者需要专业的法律咨询和维权指导",
+          "涉及预付卡消费纠纷",
+          "涉及格式合同不公平条款",
+          "希望获得调解服务",
+          "需要消协出具投诉处理意见作为诉讼参考",
+          "涉及群体性消费纠纷（可能推动公益诉讼）",
+          "首次维权，需要专业指导"
+        ],
+        "reduce_when": [
+          "商家明确拒绝调解",
+          "需要快速强制性的处理结果",
+          "涉及行政违法行为需要执法介入"
+        ]
+      },
+      "process_file": "processes/mediation.json"
+    },
+    {
+      "id": "court",
+      "name": "人民法院",
+      "full_name": "人民法院民事诉讼",
+      "url": "https://sspt.court.gov.cn",
+      "type": "judicial",
+      "operator": "各级人民法院",
+      "scope": [
+        "product_quality",
+        "false_advertising",
+        "food_safety",
+        "service_quality",
+        "refund_dispute",
+        "price_fraud",
+        "counterfeit_goods",
+        "personal_injury",
+        "property_damage",
+        "contract_dispute",
+        "punitive_damages_claim"
+      ],
+      "strengths": [
+        "法律效力最强，判决具有强制执行力",
+        "可以主张惩罚性赔偿（假一赔三、假一赔十等）",
+        "小额诉讼程序简便快捷，一审终审",
+        "网上立案和在线庭审日益普及",
+        "胜诉后诉讼费由败诉方承担",
+        "对商家具有最强威慑力",
+        "可以申请财产保全，防止商家转移财产",
+        "裁判文书公开，形成判例效应"
+      ],
+      "limitations": [
+        "诉讼流程相对复杂，有一定专业门槛",
+        "需要预先垫付诉讼费",
+        "耗时较长（普通程序可达6个月）",
+        "需要收集充分的证据",
+        "可能需要聘请律师（增加维权成本）",
+        "存在执行难的问题",
+        "需要出庭（虽可在线庭审但仍需投入时间精力）"
+      ],
+      "effectiveness": "very_high",
+      "processing_time": "小额诉讼2个月，简易程序3个月，普通程序6个月",
+      "cost": "诉讼费50元起（按标的额比例收取），胜诉后由败诉方承担",
+      "priority_conditions": {
+        "always_recommend": false,
+        "boost_when": [
+          "争议金额较大（建议5000元以上）",
+          "需要主张惩罚性赔偿（假一赔三、假一赔十）",
+          "其他投诉渠道未能解决问题",
+          "商家明确拒绝协商和调解",
+          "涉及人身伤害需要赔偿",
+          "需要强制执行力的处理结果",
+          "涉及欺诈行为（如销售假冒伪劣商品）",
+          "消费者有充分证据且法律依据明确"
+        ],
+        "reduce_when": [
+          "争议金额很小（低于500元），维权成本可能高于收益",
+          "缺乏基本证据",
+          "尚未尝试过协商、投诉等非诉讼途径",
+          "消费者无法承担诉讼时间和精力成本"
+        ]
+      },
+      "process_file": "processes/court_filing.json"
+    }
+  ],
+  "recommendation_rules": {
+    "description": "根据消费者的具体情况，智能推荐最合适的维权平台组合",
+    "priority_order": "根据案件类型、争议金额、紧迫程度、证据情况综合判断",
+    "general_strategy": [
+      {
+        "step": 1,
+        "action": "首先推荐与商家直接协商解决",
+        "note": "协商是成本最低、效率最高的方式"
+      },
+      {
+        "step": 2,
+        "action": "协商不成，根据案件类型推荐合适的投诉平台（12315为首选）",
+        "note": "大多数消费纠纷可以通过行政投诉解决"
+      },
+      {
+        "step": 3,
+        "action": "互联网相关纠纷可同时在黑猫投诉平台投诉，增加处理效率",
+        "note": "多平台同时投诉可以增加解决概率"
+      },
+      {
+        "step": 4,
+        "action": "投诉未解决的，向消费者协会申请调解",
+        "note": "消协调解可以为后续诉讼做准备"
+      },
+      {
+        "step": 5,
+        "action": "所有非诉讼途径均未解决的，向人民法院提起诉讼",
+        "note": "诉讼是最终的维权手段，但也是最有力的"
+      }
+    ],
+    "special_rules": [
+      {
+        "condition": "涉及食品安全",
+        "recommendation": ["12315", "court"],
+        "reason": "食品安全问题可主张十倍赔偿，建议同时行政投诉和司法途径"
+      },
+      {
+        "condition": "涉及消费欺诈",
+        "recommendation": ["12315", "court"],
+        "reason": "消费欺诈可主张三倍赔偿，行政部门可同时进行行政处罚"
+      },
+      {
+        "condition": "涉及互联网平台",
+        "recommendation": ["heimao", "12315"],
+        "reason": "互联网平台在黑猫投诉上响应速度快，同时向12315投诉增强效力"
+      },
+      {
+        "condition": "涉及公共服务",
+        "recommendation": ["12345", "consumer_association"],
+        "reason": "公共服务问题通过政务热线转办更为高效"
+      },
+      {
+        "condition": "金额小且需快速解决",
+        "recommendation": ["heimao", "12315"],
+        "reason": "通过平台投诉快速施压，成本低效率高"
+      },
+      {
+        "condition": "金额大且证据充分",
+        "recommendation": ["court", "12315"],
+        "reason": "大额纠纷建议通过诉讼主张赔偿，同时行政投诉形成双重压力"
+      }
+    ]
+  }
+}

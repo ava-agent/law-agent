@@ -1,0 +1,16 @@
+{
+  "doc_type": "report_letter",
+  "display_name": "举报信",
+  "description": "举报商家违法经营行为的举报信",
+  "target_authority": "市场监督管理局",
+  "required_fields": [
+    "complainant_name",
+    "complainant_phone",
+    "merchant_name",
+    "problem_description"
+  ],
+  "optional_fields": [
+    "merchant_address",
+    "evidence_available"
+  ]
+}

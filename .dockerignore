@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.env
+.git/
+.gitignore
+.idea/
+.vscode/
+*.md
+static/generated/*.docx
+.DS_Store

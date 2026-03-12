@@ -1,0 +1,13 @@
+{
+  "doc_type": "claim_letter",
+  "display_name": "索赔函",
+  "description": "向商家发送的正式索赔函",
+  "required_fields": [
+    "complainant_name",
+    "merchant_name",
+    "purchase_date",
+    "purchase_amount",
+    "problem_description",
+    "desired_outcome"
+  ]
+}

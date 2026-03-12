@@ -1,0 +1,22 @@
+{
+  "doc_type": "complaint_letter",
+  "display_name": "投诉书",
+  "description": "向市场监督管理局提交的消费者投诉书",
+  "target_authority": "市场监督管理局",
+  "required_fields": [
+    "complainant_name",
+    "complainant_phone",
+    "merchant_name",
+    "purchase_date",
+    "purchase_amount",
+    "problem_description",
+    "desired_outcome"
+  ],
+  "optional_fields": [
+    "complainant_address",
+    "complainant_id_number",
+    "merchant_address",
+    "purchase_channel",
+    "evidence_available"
+  ]
+}

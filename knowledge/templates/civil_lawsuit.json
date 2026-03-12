@@ -1,0 +1,18 @@
+{
+  "doc_type": "civil_lawsuit",
+  "display_name": "民事起诉状",
+  "description": "向人民法院提起民事诉讼的起诉状",
+  "target_authority": "人民法院",
+  "required_fields": [
+    "complainant_name",
+    "complainant_id_number",
+    "complainant_phone",
+    "complainant_address",
+    "merchant_name",
+    "merchant_address",
+    "purchase_date",
+    "purchase_amount",
+    "problem_description",
+    "desired_outcome"
+  ]
+}
