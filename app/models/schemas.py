@@ -31,6 +31,12 @@ class GenerateDocumentRequest(BaseModel):
     overrides: Optional[Dict] = None
 
 
+class DirectGenerateRequest(BaseModel):
+    doc_type: DocumentType
+    fields: Dict[str, str] = {}
+    description: str = ""
+
+
 class GenerateDocumentResponse(BaseModel):
     file_id: str
     download_url: str
