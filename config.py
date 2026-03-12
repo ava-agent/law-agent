@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     GLM_TEMPERATURE: float = 0.3
     GLM_MAX_TOKENS: int = 4096
     GENERATED_DOCS_DIR: str = "static/generated"
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
 
     class Config:
         env_file = ".env"

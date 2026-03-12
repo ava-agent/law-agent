@@ -20,10 +20,11 @@ from app.services.llm import LLMService
 
 
 class AgentService:
-    def __init__(self, llm: LLMService, knowledge: KnowledgeBase):
+    def __init__(self, llm: LLMService, knowledge: KnowledgeBase, session_store=None):
         self.llm = llm
         self.knowledge = knowledge
-        self.sessions: Dict[str, SessionState] = {}
+        self.session_store = session_store
+        self.sessions: Dict[str, SessionState] = {}  # fallback for local dev
 
     def create_session(self, case_type: Optional[str] = None):
         session_id = uuid.uuid4().hex[:12]
@@ -33,15 +34,22 @@ class AgentService:
             session.case_type = case_type
             session.collected_fields.add("case_type")
 
-        self.sessions[session_id] = session
-
         welcome = self._generate_welcome(session)
         session.messages.append({"role": "assistant", "content": welcome})
         session.phase = ConversationPhase.SITUATION_ANALYSIS
+        self._save_session(session)
         return session_id, welcome
 
     def get_session(self, session_id: str) -> Optional[SessionState]:
+        if self.session_store:
+            return self.session_store.load(session_id)
         return self.sessions.get(session_id)
+
+    def _save_session(self, session):
+        if self.session_store:
+            self.session_store.save(session)
+        else:
+            self.sessions[session.session_id] = session
 
     def _generate_welcome(self, session: SessionState) -> str:
         messages = [
@@ -51,7 +59,7 @@ class AgentService:
         return self.llm.chat(messages)
 
     def process_message(self, session_id: str, user_msg: str) -> Generator:
-        session = self.sessions.get(session_id)
+        session = self.get_session(session_id)
         if not session:
             yield {"type": "text", "content": "会话不存在，请刷新页面重新开始。"}
             return
@@ -108,6 +116,8 @@ class AgentService:
         if MIN_FIELDS_FOR_SUMMARY.issubset(session.collected_fields):
             session.phase = ConversationPhase.CASE_SUMMARY
             yield from self._auto_generate_summary(session)
+        else:
+            self._save_session(session)
 
     def _auto_generate_summary(self, session: SessionState):
         case_info_text = json.dumps(session.case_info, ensure_ascii=False, indent=2)
@@ -129,6 +139,7 @@ class AgentService:
 
         session.messages.append({"role": "assistant", "content": full_response})
         yield {"type": "text", "content": "\n\n---\n\n" + full_response}
+        self._save_session(session)
 
     def _handle_case_summary(self, session: SessionState, user_msg: str):
         lower_msg = user_msg.lower()
@@ -153,6 +164,7 @@ class AgentService:
                 full_response += chunk
             session.messages.append({"role": "assistant", "content": full_response})
             yield {"type": "text", "content": full_response}
+        self._save_session(session)
 
     def _generate_guidance(self, session: SessionState):
         case_info_text = json.dumps(session.case_info, ensure_ascii=False, indent=2)
@@ -186,6 +198,7 @@ class AgentService:
             {"label": "查看投诉平台详细流程", "action": "show_platforms"},
         ]
         yield {"type": "action", "content": json.dumps(actions, ensure_ascii=False)}
+        self._save_session(session)
 
     def _handle_guidance(self, session: SessionState, user_msg: str):
         doc_keywords = {
@@ -222,6 +235,7 @@ class AgentService:
             full_response += chunk
         session.messages.append({"role": "assistant", "content": full_response})
         yield {"type": "text", "content": full_response}
+        self._save_session(session)
 
     def _handle_document_preparation(self, session: SessionState, user_msg: str):
         doc_type = session.case_info.get("_pending_doc_type", "complaint_letter")
@@ -265,6 +279,7 @@ class AgentService:
                 ),
             }
             session.phase = ConversationPhase.FOLLOW_UP
+        self._save_session(session)
 
     def _handle_followup(self, session: SessionState, user_msg: str):
         doc_keywords = {
@@ -294,6 +309,7 @@ class AgentService:
             full_response += chunk
         session.messages.append({"role": "assistant", "content": full_response})
         yield {"type": "text", "content": full_response}
+        self._save_session(session)
 
     def _show_platform_details(self, session: SessionState):
         processes = self.knowledge.get_all_processes(session.case_type)
@@ -325,6 +341,7 @@ class AgentService:
         result = "\n".join(parts)
         session.messages.append({"role": "assistant", "content": result})
         yield {"type": "text", "content": result}
+        self._save_session(session)
 
     def _build_messages(self, session: SessionState, phase_prompt: str) -> List[Dict]:
         messages = [{"role": "system", "content": MAIN_SYSTEM_PROMPT + "\n\n" + phase_prompt}]

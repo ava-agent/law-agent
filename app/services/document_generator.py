@@ -17,9 +17,10 @@ from config import settings
 
 
 class DocumentGenerator:
-    def __init__(self, llm: LLMService, knowledge: KnowledgeBase):
+    def __init__(self, llm: LLMService, knowledge: KnowledgeBase, doc_storage=None):
         self.llm = llm
         self.knowledge = knowledge
+        self.doc_storage = doc_storage
         self.output_dir = settings.GENERATED_DOCS_DIR
 
     def generate(self, doc_type: str, case_info: dict) -> tuple[str, str]:
@@ -34,11 +35,20 @@ class DocumentGenerator:
             self._generate_generic(doc, doc_type, case_info)
 
         file_id = uuid4().hex[:12]
-        filename = f"{file_id}.docx"
-        filepath = os.path.join(self.output_dir, filename)
-        os.makedirs(self.output_dir, exist_ok=True)
-        doc.save(filepath)
-        return file_id, filepath
+
+        if self.doc_storage:
+            from io import BytesIO
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            download_url = self.doc_storage.upload(file_id, buffer.read())
+            return file_id, download_url
+        else:
+            filename = f"{file_id}.docx"
+            filepath = os.path.join(self.output_dir, filename)
+            os.makedirs(self.output_dir, exist_ok=True)
+            doc.save(filepath)
+            return file_id, filepath
 
     def _set_default_styles(self, doc: Document):
         style = doc.styles["Normal"]

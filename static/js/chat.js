@@ -10,6 +10,9 @@ class ChatApp {
         this.caseInfoPanel = document.getElementById('case-info-panel');
         this.docsPanel = document.getElementById('docs-panel');
         this.quickActions = document.getElementById('quick-actions');
+        this.sidebar = document.getElementById('sidebar');
+        this.sidebarOverlay = document.getElementById('sidebar-overlay');
+        this.sidebarToggle = document.getElementById('sidebar-toggle');
 
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         this.inputEl.addEventListener('keydown', (e) => {
@@ -19,6 +22,13 @@ class ChatApp {
             }
         });
         this.inputEl.addEventListener('input', () => this.autoResizeInput());
+
+        if (this.sidebarToggle) {
+            this.sidebarToggle.addEventListener('click', () => this.toggleSidebar());
+        }
+        if (this.sidebarOverlay) {
+            this.sidebarOverlay.addEventListener('click', () => this.closeSidebar());
+        }
 
         document.querySelectorAll('.quick-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -30,6 +40,16 @@ class ChatApp {
         });
 
         this.startSession();
+    }
+
+    toggleSidebar() {
+        this.sidebar.classList.toggle('open');
+        this.sidebarOverlay.classList.toggle('open');
+    }
+
+    closeSidebar() {
+        this.sidebar.classList.remove('open');
+        this.sidebarOverlay.classList.remove('open');
     }
 
     async startSession(caseType = null) {
@@ -44,15 +64,29 @@ class ChatApp {
             this.sessionId = data.session_id;
 
             this.loadingEl.style.display = 'none';
-            this.messagesEl.innerHTML = '';
+            this.clearMessages();
             this.appendMessage('assistant', data.welcome_message);
 
             this.inputEl.disabled = false;
             this.sendBtn.disabled = false;
             this.inputEl.focus();
         } catch (err) {
-            this.loadingEl.innerHTML = '<p style="color: #ef4444;">连接失败，请刷新页面重试</p>';
+            this.loadingEl.textContent = '';
+            const errIcon = document.createElement('p');
+            errIcon.style.cssText = 'font-size:24px;margin-bottom:12px;color:var(--danger)';
+            errIcon.textContent = '\u26A0';
+            const errText = document.createElement('p');
+            errText.style.color = 'var(--danger)';
+            errText.textContent = '连接失败，请刷新页面重试';
+            this.loadingEl.appendChild(errIcon);
+            this.loadingEl.appendChild(errText);
             console.error('Failed to start session:', err);
+        }
+    }
+
+    clearMessages() {
+        while (this.messagesEl.firstChild) {
+            this.messagesEl.removeChild(this.messagesEl.firstChild);
         }
     }
 
@@ -66,8 +100,7 @@ class ChatApp {
         this.sendBtn.disabled = true;
 
         this.appendMessage('user', text);
-        const assistantEl = this.appendMessage('assistant', '');
-        const bubbleEl = assistantEl.querySelector('.message-bubble');
+        const typingEl = this.showTypingIndicator();
 
         try {
             const response = await fetch('/api/chat/message', {
@@ -78,6 +111,10 @@ class ChatApp {
                     message: text,
                 }),
             });
+
+            typingEl.remove();
+            const assistantEl = this.appendMessage('assistant', '');
+            const bubbleEl = assistantEl.querySelector('.message-bubble');
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
@@ -101,7 +138,7 @@ class ChatApp {
                         const parsed = JSON.parse(data);
                         if (parsed.type === 'text') {
                             fullText += parsed.content;
-                            bubbleEl.innerHTML = this.renderMarkdown(fullText);
+                            this.setRenderedMarkdown(bubbleEl, fullText);
                             this.scrollToBottom();
                         } else if (parsed.type === 'action') {
                             const actions = JSON.parse(parsed.content);
@@ -111,12 +148,14 @@ class ChatApp {
                             this.updateCaseInfo(info);
                         }
                     } catch (e) {
-                        // skip malformed
+                        // skip malformed events
                     }
                 }
             }
         } catch (err) {
-            bubbleEl.textContent = '网络错误，请重试。';
+            typingEl.remove();
+            const errEl = this.appendMessage('assistant', '');
+            errEl.querySelector('.message-bubble').textContent = '网络错误，请重试。';
             console.error('Message error:', err);
         }
 
@@ -125,18 +164,39 @@ class ChatApp {
         this.inputEl.focus();
     }
 
+    showTypingIndicator() {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'message message-assistant';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = '\u2696';
+
+        const dots = document.createElement('div');
+        dots.className = 'typing-dots';
+        for (let i = 0; i < 3; i++) {
+            dots.appendChild(document.createElement('span'));
+        }
+
+        wrapper.appendChild(avatar);
+        wrapper.appendChild(dots);
+        this.messagesEl.appendChild(wrapper);
+        this.scrollToBottom();
+        return wrapper;
+    }
+
     appendMessage(role, content) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `message message-${role}`;
 
         const avatar = document.createElement('div');
         avatar.className = 'message-avatar';
-        avatar.textContent = role === 'assistant' ? '⚖' : '👤';
+        avatar.textContent = role === 'assistant' ? '\u2696' : '\u4F60';
 
         const bubble = document.createElement('div');
         bubble.className = 'message-bubble';
         if (content) {
-            bubble.innerHTML = this.renderMarkdown(content);
+            this.setRenderedMarkdown(bubble, content);
         }
 
         msgDiv.appendChild(avatar);
@@ -144,6 +204,36 @@ class ChatApp {
         this.messagesEl.appendChild(msgDiv);
         this.scrollToBottom();
         return msgDiv;
+    }
+
+    /**
+     * Renders server-generated markdown content into a DOM element.
+     * Content is first escaped (& < >) then parsed for markdown syntax.
+     * Source: AI model responses from our own backend only.
+     */
+    setRenderedMarkdown(el, text) {
+        // Escape HTML entities first for safety
+        let html = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        // Markdown transformations on escaped content
+        html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/^---$/gm, '<hr>');
+        html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+        html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
+        html = html.replace(/\n(?!<)/g, '<br>');
+        html = html.replace(/<br>(<(?:h[23]|ul|hr|li))/g, '$1');
+
+        // Use DOM parser to safely set content from escaped+transformed markdown
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        el.textContent = '';
+        while (doc.body.firstChild) {
+            el.appendChild(doc.body.firstChild);
+        }
     }
 
     renderActionCards(container, actions) {
@@ -202,17 +292,28 @@ class ChatApp {
 
             const data = await res.json();
             const bubble = loadingMsg.querySelector('.message-bubble');
-            bubble.innerHTML = `
-                <p>【${data.doc_type_label}】已生成！</p>
-                <div class="action-cards">
-                    <a href="${data.download_url}" class="action-card" download style="text-decoration:none;">
-                        📥 下载 ${data.doc_type_label}
-                    </a>
-                </div>
-                <p style="margin-top:8px;font-size:12px;color:#6b7280;">
-                    提示：下载后请检查文书内容，补充姓名、身份证号等个人信息。
-                </p>
-            `;
+            bubble.textContent = '';
+
+            const title = document.createElement('p');
+            const strong = document.createElement('strong');
+            strong.textContent = `【${data.doc_type_label}】已生成`;
+            title.appendChild(strong);
+            bubble.appendChild(title);
+
+            const cards = document.createElement('div');
+            cards.className = 'action-cards';
+            const link = document.createElement('a');
+            link.href = data.download_url;
+            link.className = 'action-card';
+            link.download = '';
+            link.textContent = `\uD83D\uDCE5 下载 ${data.doc_type_label}`;
+            cards.appendChild(link);
+            bubble.appendChild(cards);
+
+            const tip = document.createElement('p');
+            tip.style.cssText = 'margin-top:10px;font-size:12px;color:var(--text-muted)';
+            tip.textContent = '提示：下载后请检查文书内容，补充姓名、身份证号等个人信息。';
+            bubble.appendChild(tip);
 
             this.addDocToPanel(data.doc_type_label, data.download_url);
         } catch (err) {
@@ -223,14 +324,21 @@ class ChatApp {
     }
 
     updateCaseInfo(info) {
-        this.caseInfoPanel.innerHTML = '';
+        this.caseInfoPanel.textContent = '';
         for (const [label, value] of Object.entries(info)) {
             const item = document.createElement('div');
             item.className = 'case-info-item';
-            item.innerHTML = `
-                <span class="case-info-label">${label}</span>
-                <span class="case-info-value">${value}</span>
-            `;
+
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'case-info-label';
+            labelSpan.textContent = label;
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'case-info-value';
+            valueSpan.textContent = value;
+
+            item.appendChild(labelSpan);
+            item.appendChild(valueSpan);
             this.caseInfoPanel.appendChild(item);
         }
     }
@@ -241,37 +349,12 @@ class ChatApp {
 
         const item = document.createElement('div');
         item.className = 'doc-item';
-        item.innerHTML = `<a href="${url}" download>📄 ${label}</a>`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '';
+        link.textContent = `\uD83D\uDCC4 ${label}`;
+        item.appendChild(link);
         this.docsPanel.appendChild(item);
-    }
-
-    renderMarkdown(text) {
-        // Simple markdown rendering
-        let html = text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-
-        // Headers
-        html = html.replace(/^### (.+)$/gm, '<strong style="font-size:15px;">$1</strong>');
-        html = html.replace(/^## (.+)$/gm, '<strong style="font-size:16px;">$1</strong>');
-
-        // Bold
-        html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-        // Horizontal rule
-        html = html.replace(/^---$/gm, '<hr style="margin:12px 0;border:none;border-top:1px solid #e5e7eb;">');
-
-        // List items
-        html = html.replace(/^- (.+)$/gm, '• $1');
-        html = html.replace(/^\d+\. (.+)$/gm, (match, p1, offset, str) => {
-            return match;
-        });
-
-        // Line breaks
-        html = html.replace(/\n/g, '<br>');
-
-        return html;
     }
 
     autoResizeInput() {
@@ -280,7 +363,9 @@ class ChatApp {
     }
 
     scrollToBottom() {
-        this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+        requestAnimationFrame(() => {
+            this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+        });
     }
 }
 

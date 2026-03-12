@@ -10,12 +10,12 @@ from app.models.schemas import (
     GenerateDocumentResponse,
     DocumentTypeInfo,
 )
-from app.dependencies import agent_service, llm_service, knowledge_base
+from app.dependencies import agent_service, llm_service, knowledge_base, doc_storage
 from app.services.document_generator import DocumentGenerator
 from config import settings
 
 router = APIRouter()
-doc_generator = DocumentGenerator(llm_service, knowledge_base)
+doc_generator = DocumentGenerator(llm_service, knowledge_base, doc_storage)
 
 
 @router.post("/generate", response_model=GenerateDocumentResponse)
@@ -28,14 +28,24 @@ async def generate_document(request: GenerateDocumentRequest):
     if request.overrides:
         case_info.update(request.overrides)
 
-    file_id, filepath = doc_generator.generate(request.doc_type.value, case_info)
+    file_id, result = doc_generator.generate(request.doc_type.value, case_info)
 
     doc_label = DOCUMENT_TYPE_LABELS.get(request.doc_type, request.doc_type.value)
     session.generated_documents.append(doc_label)
 
+    # Save session after modification (for Supabase persistence)
+    if hasattr(agent_service, '_save_session'):
+        agent_service._save_session(session)
+
+    # If result is a URL (Supabase Storage), use it directly; otherwise local path
+    if result.startswith("http"):
+        download_url = result
+    else:
+        download_url = f"/api/document/download/{file_id}"
+
     return GenerateDocumentResponse(
         file_id=file_id,
-        download_url=f"/api/document/download/{file_id}",
+        download_url=download_url,
         doc_type=request.doc_type.value,
         doc_type_label=doc_label,
     )
