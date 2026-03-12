@@ -3,6 +3,7 @@ class ChatApp {
         this.sessionId = null;
         this.isProcessing = false;
 
+        // Chat elements
         this.messagesEl = document.getElementById('chat-messages');
         this.inputEl = document.getElementById('user-input');
         this.sendBtn = document.getElementById('send-btn');
@@ -13,6 +14,26 @@ class ChatApp {
         this.sidebar = document.getElementById('sidebar');
         this.sidebarOverlay = document.getElementById('sidebar-overlay');
         this.sidebarToggle = document.getElementById('sidebar-toggle');
+
+        // Doc tool elements
+        this.chatContainer = document.getElementById('chat-container');
+        this.docFormContainer = document.getElementById('doc-form-container');
+        this.docForm = document.getElementById('doc-form');
+        this.docFormFields = document.getElementById('doc-form-fields');
+        this.docFormTitle = document.getElementById('doc-form-title');
+        this.docFormDesc = document.getElementById('doc-form-desc');
+        this.docFormDescription = document.getElementById('doc-form-description');
+        this.docFormSubmit = document.getElementById('doc-form-submit');
+        this.docFormResult = document.getElementById('doc-form-result');
+        this.docToolSection = document.getElementById('doc-tool-section');
+        this.docToolButtons = document.getElementById('doc-tool-buttons');
+        this.navChat = document.getElementById('nav-chat');
+        this.navDocs = document.getElementById('nav-docs');
+        this.sidebarCaseInfo = document.getElementById('sidebar-case-info');
+        this.sidebarDocs = document.getElementById('sidebar-docs');
+        this.currentView = 'chat';
+        this.currentDocType = null;
+        this.docTypes = [];
 
         this.sendBtn.addEventListener('click', () => this.sendMessage());
         this.inputEl.addEventListener('keydown', (e) => {
@@ -30,6 +51,16 @@ class ChatApp {
             this.sidebarOverlay.addEventListener('click', () => this.closeSidebar());
         }
 
+        // Nav buttons
+        this.navChat.addEventListener('click', () => this.switchView('chat'));
+        this.navDocs.addEventListener('click', () => this.switchView('doc-tool'));
+
+        // Doc form submit
+        this.docForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.submitDocForm();
+        });
+
         document.querySelectorAll('.quick-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const type = btn.dataset.type;
@@ -40,6 +71,7 @@ class ChatApp {
         });
 
         this.startSession();
+        this.loadDocTypes();
     }
 
     toggleSidebar() {
@@ -355,6 +387,157 @@ class ChatApp {
         link.textContent = `\uD83D\uDCC4 ${label}`;
         item.appendChild(link);
         this.docsPanel.appendChild(item);
+    }
+
+    // ─── Doc Tool Methods ─────────────────────
+
+    async loadDocTypes() {
+        try {
+            const res = await fetch('/api/document/types-ext');
+            this.docTypes = await res.json();
+        } catch (err) {
+            console.error('Failed to load doc types:', err);
+        }
+    }
+
+    switchView(view) {
+        this.navChat.classList.toggle('active', view === 'chat');
+        this.navDocs.classList.toggle('active', view === 'doc-tool');
+
+        if (view === 'chat') {
+            this.chatContainer.style.display = 'flex';
+            this.docFormContainer.style.display = 'none';
+            this.docToolSection.style.display = 'none';
+            this.sidebarCaseInfo.style.display = '';
+            this.sidebarDocs.style.display = '';
+            this.currentView = 'chat';
+        } else {
+            this.chatContainer.style.display = 'none';
+            this.docFormContainer.style.display = 'none';
+            this.docToolSection.style.display = '';
+            this.sidebarCaseInfo.style.display = 'none';
+            this.sidebarDocs.style.display = '';
+            this.renderDocToolButtons();
+            this.currentView = 'doc-tool';
+        }
+        this.closeSidebar();
+    }
+
+    renderDocToolButtons() {
+        this.docToolButtons.textContent = '';
+        this.docTypes.forEach(dt => {
+            const btn = document.createElement('button');
+            btn.className = 'doc-tool-btn';
+            btn.textContent = dt.label;
+            btn.addEventListener('click', () => this.openDocForm(dt));
+            this.docToolButtons.appendChild(btn);
+        });
+    }
+
+    openDocForm(docType) {
+        this.currentDocType = docType;
+        this.docFormTitle.textContent = docType.label;
+        this.docFormDesc.textContent = docType.description;
+        this.docFormResult.style.display = 'none';
+        this.docFormSubmit.disabled = false;
+        this.docFormSubmit.textContent = '生成文书';
+        this.docFormDescription.value = '';
+
+        // Render form fields
+        this.docFormFields.textContent = '';
+        const fields = docType.required_fields || [];
+        const labels = docType.field_labels || {};
+        fields.forEach(field => {
+            // Skip fields handled by the description textarea
+            if (field === 'problem_description' || field === 'evidence_available') return;
+            const group = document.createElement('div');
+            group.className = 'doc-form-group';
+            const label = document.createElement('label');
+            label.setAttribute('for', 'field-' + field);
+            label.textContent = labels[field] || field;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'field-' + field;
+            input.name = field;
+            input.placeholder = labels[field] || field;
+            group.appendChild(label);
+            group.appendChild(input);
+            this.docFormFields.appendChild(group);
+        });
+
+        // Highlight active button
+        this.docToolButtons.querySelectorAll('.doc-tool-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent === docType.label);
+        });
+
+        this.chatContainer.style.display = 'none';
+        this.docFormContainer.style.display = '';
+    }
+
+    async submitDocForm() {
+        if (!this.currentDocType) return;
+
+        this.docFormSubmit.disabled = true;
+        this.docFormSubmit.textContent = '生成中...';
+        this.docFormResult.style.display = 'none';
+
+        const fields = {};
+        this.docFormFields.querySelectorAll('input').forEach(input => {
+            if (input.value.trim()) {
+                fields[input.name] = input.value.trim();
+            }
+        });
+        const description = this.docFormDescription.value.trim();
+
+        try {
+            const res = await fetch('/api/document/generate-direct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    doc_type: this.currentDocType.type,
+                    fields: fields,
+                    description: description,
+                }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || '生成失败');
+            }
+
+            const data = await res.json();
+
+            this.docFormResult.textContent = '';
+
+            const successText = document.createElement('p');
+            successText.style.cssText = 'margin-bottom:12px;color:var(--success);font-weight:600;';
+            successText.textContent = '\u2714 ' + data.doc_type_label + ' 已生成';
+            this.docFormResult.appendChild(successText);
+
+            const link = document.createElement('a');
+            link.href = data.download_url;
+            link.download = '';
+            link.textContent = '\uD83D\uDCE5 下载 ' + data.doc_type_label;
+            this.docFormResult.appendChild(link);
+
+            const tip = document.createElement('p');
+            tip.style.cssText = 'margin-top:12px;font-size:12px;color:var(--text-muted);';
+            tip.textContent = '提示：下载后请检查文书内容，补充个人敏感信息（如身份证号）。';
+            this.docFormResult.appendChild(tip);
+
+            this.docFormResult.style.display = '';
+            this.addDocToPanel(data.doc_type_label, data.download_url);
+        } catch (err) {
+            this.docFormResult.textContent = '';
+            const errText = document.createElement('p');
+            errText.style.color = 'var(--danger)';
+            errText.textContent = '生成失败：' + err.message;
+            this.docFormResult.appendChild(errText);
+            this.docFormResult.style.display = '';
+        }
+
+        this.docFormSubmit.disabled = false;
+        this.docFormSubmit.textContent = '生成文书';
     }
 
     autoResizeInput() {
