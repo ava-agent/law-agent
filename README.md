@@ -4,6 +4,12 @@
 
 > **在线体验**：[https://law.rxcloud.group](https://law.rxcloud.group)
 
+## 页面预览
+
+| 智能咨询 | 文书工具 |
+|:---:|:---:|
+| ![智能咨询页面](docs/images/screenshot-chat.png) | ![文书工具页面](docs/images/screenshot-doc-form.png) |
+
 ## 功能特性
 
 - **智能对话咨询**：通过对话逐步收集案件信息，提供专业的法律建议
