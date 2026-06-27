@@ -7,7 +7,7 @@ from app.models.schemas import SessionState
 
 class SessionStore:
     def __init__(self, supabase_client):
-        self.client = supabase_client
+        self.client = supabase_client.schema("law")
 
     def save(self, session: SessionState):
         data = {
