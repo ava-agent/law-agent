@@ -25,7 +25,7 @@
 | 组件 | 技术 | 说明 |
 |------|------|------|
 | 后端框架 | Python 3.9+ / FastAPI | 异步路由、SSE 流式响应 |
-| AI 模型 | 智谱 GLM-4-Plus (zhipuai SDK) | 流式生成、结构化信息提取 |
+| AI 模型 | 火山方舟 Ark CodingPlan (OpenAI SDK) | 流式生成、结构化信息提取 |
 | 文书生成 | python-docx | 模板化法律文书生成 |
 | 前端 | Jinja2 + 原生 HTML/CSS/JS | SSE EventSource、DOMParser 安全渲染 |
 | 知识库 | JSON 文件 (RAG) | 法律条文、投诉流程、平台规则 |
@@ -95,7 +95,7 @@ law-agent/
 │   │
 │   ├── services/
 │   │   ├── agent.py             # 核心 Agent 逻辑
-│   │   ├── llm.py               # 智谱 GLM 封装
+│   │   ├── llm.py               # Ark/OpenAI 兼容 LLM 封装
 │   │   ├── document_generator.py # 文书生成
 │   │   ├── platform_recommender.py # 平台推荐
 │   │   ├── knowledge.py         # 知识库加载
@@ -145,7 +145,7 @@ pip install -r requirements.txt
 
 #### 2. 配置 API Key
 
-复制环境变量模板并填入你的智谱 AI API Key：
+复制环境变量模板并填入你的 Ark API Key：
 
 ```bash
 cp .env.example .env
@@ -154,11 +154,12 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```
-ZHIPUAI_API_KEY=your_api_key_here
-GLM_MODEL=glm-4-plus
+ARK_API_KEY=your_ark_api_key_here
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/coding/v3
+ARK_CHAT_MODEL=doubao-seed-2-0-code-preview-260215
 ```
 
-> 获取 API Key：访问 [open.bigmodel.cn](https://open.bigmodel.cn) 注册并创建 API Key
+> 获取 API Key：访问火山方舟控制台创建 Ark API Key，并确认使用已购买的 CodingPlan 入口。
 
 #### 3. 启动服务
 
@@ -197,8 +198,9 @@ vercel --prod
 #### 3. 配置环境变量
 
 ```bash
-printf '%s' "your_zhipuai_api_key" | vercel env add ZHIPUAI_API_KEY production
-printf '%s' "glm-4-plus" | vercel env add GLM_MODEL production
+printf '%s' "your_ark_api_key" | vercel env add ARK_API_KEY production
+printf '%s' "https://ark.cn-beijing.volces.com/api/coding/v3" | vercel env add ARK_BASE_URL production
+printf '%s' "doubao-seed-2-0-code-preview-260215" | vercel env add ARK_CHAT_MODEL production
 printf '%s' "https://xxx.supabase.co" | vercel env add SUPABASE_URL production
 printf '%s' "your_supabase_anon_key" | vercel env add SUPABASE_KEY production
 ```

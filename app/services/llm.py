@@ -1,6 +1,7 @@
 from typing import List, Dict
 
-from zhipuai import ZhipuAI
+import httpx
+from openai import OpenAI
 
 from config import settings
 
@@ -9,10 +10,14 @@ class LLMService:
     def __init__(self, settings_obj=None):
         if settings_obj is None:
             settings_obj = settings
-        self.client = ZhipuAI(api_key=settings_obj.ZHIPUAI_API_KEY)
-        self.model = settings_obj.GLM_MODEL
-        self.temperature = settings_obj.GLM_TEMPERATURE
-        self.max_tokens = settings_obj.GLM_MAX_TOKENS
+        self.client = OpenAI(
+            api_key=settings_obj.ARK_API_KEY,
+            base_url=settings_obj.ARK_BASE_URL,
+            http_client=httpx.Client(proxy=None, trust_env=False),
+        )
+        self.model = settings_obj.ARK_CHAT_MODEL
+        self.temperature = settings_obj.LLM_TEMPERATURE
+        self.max_tokens = settings_obj.LLM_MAX_TOKENS
 
     def chat(self, messages: List[Dict]) -> str:
         response = self.client.chat.completions.create(
