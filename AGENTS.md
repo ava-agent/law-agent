@@ -4,13 +4,13 @@
 
 - Repository: `ava-agent/law-agent`
 - Public URL: `https://law.rxcloud.group`
-- Stack: FastAPI, Jinja/static frontend, ZhipuAI GLM, python-docx, Supabase
+- Stack: FastAPI, Jinja/static frontend, Volcengine Ark/OpenAI-compatible client, python-docx, Supabase
 - Product: consumer-rights legal consultation, complaint workflow, and document generation assistant.
 
 ## Before Editing
 
 - Treat generated legal advice and documents as user-facing high-risk output; keep disclaimers and source law references clear.
-- Keep ZhipuAI and Supabase credentials in local `.env` or deployment secrets.
+- Keep Ark and Supabase credentials in local `.env` or deployment secrets.
 - Do not commit generated documents under `static/generated/` or filled environment files.
 
 ## Useful Commands
