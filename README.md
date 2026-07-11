@@ -25,7 +25,7 @@
 | 组件 | 技术 | 说明 |
 |------|------|------|
 | 后端框架 | Python 3.9+ / FastAPI | 异步路由、SSE 流式响应 |
-| AI 模型 | 火山方舟 Ark CodingPlan (OpenAI SDK) | 流式生成、结构化信息提取 |
+| AI 模型 | 火山方舟 Ark Agent Plan (OpenAI SDK) | 流式生成、结构化信息提取 |
 | 文书生成 | python-docx | 模板化法律文书生成 |
 | 前端 | Jinja2 + 原生 HTML/CSS/JS | SSE EventSource、DOMParser 安全渲染 |
 | 知识库 | JSON 文件 (RAG) | 法律条文、投诉流程、平台规则 |
@@ -155,11 +155,11 @@ cp .env.example .env
 
 ```
 ARK_API_KEY=your_ark_api_key_here
-ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/coding/v3
+ARK_BASE_URL=https://ark.cn-beijing.volces.com/api/plan/v3
 ARK_CHAT_MODEL=doubao-seed-2-0-code-preview-260215
 ```
 
-> 获取 API Key：访问火山方舟控制台创建 Ark API Key，并确认使用已购买的 CodingPlan 入口。
+> 获取 API Key：访问火山方舟 Agent Plan 控制台创建 API Key，并确认套餐已生效。
 
 #### 3. 启动服务
 
@@ -199,7 +199,7 @@ vercel --prod
 
 ```bash
 printf '%s' "your_ark_api_key" | vercel env add ARK_API_KEY production
-printf '%s' "https://ark.cn-beijing.volces.com/api/coding/v3" | vercel env add ARK_BASE_URL production
+printf '%s' "https://ark.cn-beijing.volces.com/api/plan/v3" | vercel env add ARK_BASE_URL production
 printf '%s' "doubao-seed-2-0-code-preview-260215" | vercel env add ARK_CHAT_MODEL production
 printf '%s' "https://xxx.supabase.co" | vercel env add SUPABASE_URL production
 printf '%s' "your_supabase_anon_key" | vercel env add SUPABASE_KEY production
